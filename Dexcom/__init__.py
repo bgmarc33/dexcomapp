@@ -1,8 +1,9 @@
 from flask_restful import Resource
-from flask import request, Response, redirect
+from flask import request, redirect
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime
 from Utils.Utilities import AccessToken
+from matplotlib import pyplot
 
 client_id = "QvrGH5ZiPdsZJdvMebtDa2YsLP4CAHtR"
 client_secret = "ApAdfBhhdFyxAGUh"
@@ -29,7 +30,18 @@ class EGV(Resource):
             start_date = datetime.strftime(start, date_format)
         resp = requests.get(url=dexcom_host + '/v2/users/self/egvs?startDate=' + start_date + '&endDate=' + end_date,
                             headers={'authorization': 'Bearer ' + AccessToken.get_access_token()})
-        return resp.json()
+        egvs = resp.json().get('egvs', [])
+        sugar = []
+        dates = []
+        for egv in egvs:
+            sugar.append(egv.get('value', ''))
+            dates.append(egv.get('displayTime', ''))
+
+        pyplot.plot_date(dates, sugar, xdate=True)
+        pyplot.xlabel('Date')
+        pyplot.ylabel('Sugar Level')
+
+        return { 'status': 'success' }
 
 
 class Device(Resource):
