@@ -45,7 +45,7 @@ class EGV(Resource):
         pyplot.figure(figsize=(20, 20))
         index = 1
         pagecount = 0
-        for day in daySugarMap.keys():
+        for day in sorted(daySugarMap.keys()):
             if index % 6 == 0:
                 pyplot.savefig('sugar' + str(pagecount) + '.png')
                 pagecount += 1
@@ -66,9 +66,10 @@ class EGV(Resource):
             pyplot.axhline(y=80, color='darkgreen')
             pyplot.axhline(y=160, color='darkgreen')
             pyplot.fill_between(dates, 80, 160, facecolor='green', alpha=0.2)
+            pyplot.fill_between(dates, 0, 60, facecolor='red', alpha=0.2)
             index += 1
 
-        pyplot.savefig('sugar' + str(pagecount + 1) + '.png')
+        pyplot.savefig('sugar' + str(pagecount) + '.png')
         return { 'status': 'success', 'sugar': daySugarMap }
 
 
