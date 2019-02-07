@@ -42,24 +42,33 @@ class EGV(Resource):
             else:
                 daySugarMap[date.strftime("%Y/%m/%d")].append({ 'sugar': egv.get('value', ''), 'time': date.strftime("%I:%M %p")})
 
+        pyplot.figure(figsize=(20, 20))
+        index = 1
+        pagecount = 0
         for day in daySugarMap.keys():
+            if index % 6 == 0:
+                pyplot.savefig('sugar' + str(pagecount) + '.png')
+                pagecount += 1
+                pyplot.figure(figsize=(20, 20))
+                index = 1
             sugars = []
             dates = []
             for time in daySugarMap[day]:
                 sugars.append(time.get('sugar', ''))
                 dates.append(time.get('time', ''))
 
-            pyplot.title('Bryan\'s Glucose Levels')
+            pyplot.subplot(6, 1, index)
+            pyplot.title('Date: ' + str(day))
             pyplot.plot(np.array(dates), np.array(sugars), color='black')
-            pyplot.xlabel('Date: ' + str(day))
             pyplot.xticks(color='w')
             pyplot.ylabel('Sugar Level')
             pyplot.ylim([0,400])
             pyplot.axhline(y=80, color='darkgreen')
             pyplot.axhline(y=160, color='darkgreen')
             pyplot.fill_between(dates, 80, 160, facecolor='green', alpha=0.2)
-            pyplot.show()
+            index += 1
 
+        pyplot.savefig('sugar' + str(pagecount + 1) + '.png')
         return { 'status': 'success', 'sugar': daySugarMap }
 
 
