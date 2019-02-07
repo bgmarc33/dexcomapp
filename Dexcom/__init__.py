@@ -4,6 +4,7 @@ import requests
 from datetime import datetime
 from Utils.Utilities import AccessToken
 from matplotlib import pyplot
+import numpy as np
 
 client_id = "QvrGH5ZiPdsZJdvMebtDa2YsLP4CAHtR"
 client_secret = "ApAdfBhhdFyxAGUh"
@@ -31,17 +32,35 @@ class EGV(Resource):
         resp = requests.get(url=dexcom_host + '/v2/users/self/egvs?startDate=' + start_date + '&endDate=' + end_date,
                             headers={'authorization': 'Bearer ' + AccessToken.get_access_token()})
         egvs = resp.json().get('egvs', [])
-        sugar = []
-        dates = []
+
+        daySugarMap = {}
         for egv in egvs:
-            sugar.append(egv.get('value', ''))
-            dates.append(egv.get('displayTime', ''))
+            day = egv.get('displayTime', '')
+            date = datetime.strptime(day, date_format)
+            if not date.strftime("%Y/%m/%d") in daySugarMap:
+                daySugarMap[date.strftime("%Y/%m/%d")] = [{ 'sugar': egv.get('value', ''), 'time': date.strftime("%I:%M %p")}]
+            else:
+                daySugarMap[date.strftime("%Y/%m/%d")].append({ 'sugar': egv.get('value', ''), 'time': date.strftime("%I:%M %p")})
 
-        pyplot.plot_date(dates, sugar, xdate=True)
-        pyplot.xlabel('Date')
-        pyplot.ylabel('Sugar Level')
+        for day in daySugarMap.keys():
+            sugars = []
+            dates = []
+            for time in daySugarMap[day]:
+                sugars.append(time.get('sugar', ''))
+                dates.append(time.get('time', ''))
 
-        return { 'status': 'success' }
+            pyplot.title('Bryan\'s Glucose Levels')
+            pyplot.plot(np.array(dates), np.array(sugars), color='black')
+            pyplot.xlabel('Date: ' + str(day))
+            pyplot.xticks(color='w')
+            pyplot.ylabel('Sugar Level')
+            pyplot.ylim([0,400])
+            pyplot.axhline(y=80, color='darkgreen')
+            pyplot.axhline(y=160, color='darkgreen')
+            pyplot.fill_between(dates, 80, 160, facecolor='green', alpha=0.2)
+            pyplot.show()
+
+        return { 'status': 'success', 'sugar': daySugarMap }
 
 
 class Device(Resource):
