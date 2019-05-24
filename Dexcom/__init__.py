@@ -6,8 +6,8 @@ from Utils.Utilities import AccessToken
 from matplotlib import pyplot
 import numpy as np
 
-client_id = "QvrGH5ZiPdsZJdvMebtDa2YsLP4CAHtR"
-client_secret = "ApAdfBhhdFyxAGUh"
+client_id = ""
+client_secret = ""
 dexcom_host = "https://api.dexcom.com"
 redirect_uri = "http://localhost:3000/token"
 date_format = "%Y-%m-%dT%H:%M:%S"
@@ -42,14 +42,14 @@ class EGV(Resource):
             else:
                 daySugarMap[date.strftime("%Y/%m/%d")].append({ 'sugar': egv.get('value', ''), 'time': date.strftime("%I:%M %p")})
 
-        pyplot.figure(figsize=(20, 20))
+        pyplot.figure(figsize=(8, 11), dpi=200)
         index = 1
         pagecount = 0
-        for day in sorted(daySugarMap.keys()):
-            if index % 6 == 0:
+        for day in daySugarMap.keys():
+            if index % 9 == 0:
                 pyplot.savefig('sugar' + str(pagecount) + '.png')
                 pagecount += 1
-                pyplot.figure(figsize=(20, 20))
+                pyplot.figure(figsize=(8, 11), dpi=200)
                 index = 1
             sugars = []
             dates = []
@@ -57,7 +57,7 @@ class EGV(Resource):
                 sugars.append(time.get('sugar', ''))
                 dates.append(time.get('time', ''))
 
-            pyplot.subplot(6, 1, index)
+            pyplot.subplot(9, 1, index)
             pyplot.title('Date: ' + str(day))
             pyplot.plot(np.array(dates), np.array(sugars), color='black')
             pyplot.xticks(color='w')
@@ -67,7 +67,7 @@ class EGV(Resource):
             pyplot.axhline(y=160, color='darkgreen')
             pyplot.fill_between(dates, 80, 160, facecolor='green', alpha=0.2)
             pyplot.fill_between(dates, 0, 60, facecolor='red', alpha=0.2)
-            index += 1
+            index += 2
 
         pyplot.savefig('sugar' + str(pagecount) + '.png')
         return { 'status': 'success', 'sugar': daySugarMap }
